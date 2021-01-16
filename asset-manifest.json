@@ -1,0 +1,24 @@
+{
+  "files": {
+    "main.css": "/gsb/static/css/main.f349f126.chunk.css",
+    "main.js": "/gsb/static/js/main.26a0f1a4.chunk.js",
+    "main.js.map": "/gsb/static/js/main.26a0f1a4.chunk.js.map",
+    "runtime-main.js": "/gsb/static/js/runtime-main.9c138993.js",
+    "runtime-main.js.map": "/gsb/static/js/runtime-main.9c138993.js.map",
+    "static/css/2.ae9f1eb3.chunk.css": "/gsb/static/css/2.ae9f1eb3.chunk.css",
+    "static/js/2.155ae8e4.chunk.js": "/gsb/static/js/2.155ae8e4.chunk.js",
+    "static/js/2.155ae8e4.chunk.js.map": "/gsb/static/js/2.155ae8e4.chunk.js.map",
+    "index.html": "/gsb/index.html",
+    "static/css/2.ae9f1eb3.chunk.css.map": "/gsb/static/css/2.ae9f1eb3.chunk.css.map",
+    "static/css/main.f349f126.chunk.css.map": "/gsb/static/css/main.f349f126.chunk.css.map",
+    "static/js/2.155ae8e4.chunk.js.LICENSE.txt": "/gsb/static/js/2.155ae8e4.chunk.js.LICENSE.txt",
+    "static/media/App.css": "/gsb/static/media/RobotoMono-Medium.e04fa2d8.ttf"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.9c138993.js",
+    "static/css/2.ae9f1eb3.chunk.css",
+    "static/js/2.155ae8e4.chunk.js",
+    "static/css/main.f349f126.chunk.css",
+    "static/js/main.26a0f1a4.chunk.js"
+  ]
+}
