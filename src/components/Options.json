@@ -1,0 +1,6 @@
+{
+  "name": {
+    "minLength": 3,
+    "maxLength": 15
+  }
+}
