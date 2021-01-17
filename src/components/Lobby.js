@@ -46,7 +46,7 @@ function PlayerTable(data) {
       {" "}
       <Button variant="primary"
         onClick={() => kick(data.lobby.local.lobbyCode, item.id)}>
-        <i class="fas fa-users-slash"></i>
+        <i className="fas fa-users-slash"></i>
       </Button>
     </td>
   }
@@ -66,7 +66,7 @@ function PlayerTable(data) {
             <th><i className="text-success fas fa-list-ol"></i></th>
             <th><i className="text-secondary fas fa-users"></i></th>
             <th><i className="text-warning fas fa-star"></i></th>
-            {isHost && <th><i class="fas fa-users-cog"></i></th>}
+            {isHost && <th><i className="fas fa-users-cog"></i></th>}
           </tr>
         </thead>
         <tbody>
@@ -108,7 +108,7 @@ function Lobby(props) {
     <>
       <Nav activeKey="">
         <Nav.Item>
-          <Nav.Link href="/">Home</Nav.Link>
+          <Nav.Link href="/gsb">Home</Nav.Link>
         </Nav.Item>
       </Nav>
       <center>

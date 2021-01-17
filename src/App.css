@@ -1,14 +1,3 @@
-@font-face {
-  font-family: Roboto Mono;
-  src: url(./fonts/Roboto_Mono/RobotoMono-Medium.ttf);
-}
-
-@font-face {
-  font-family: Roboto Mono;
-  src: url(./fonts/Roboto_Mono/RobotoMono-Light.ttf);
-  font-weight: 300;
-}
-
 .buzzer {
   border-radius: 100%;
   width: 70vw;
