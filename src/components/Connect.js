@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Database } from "./Fire.js"
 import getRandomString from "./RandomString.js"
-import { Button, InputGroup, FormControl, Row, Container, Alert } from 'react-bootstrap'
+import { Button, InputGroup, FormControl, Row, Container, Alert, Fade } from 'react-bootstrap'
 
 function Connect(props) {
   const options = require("./Options.json")
   const [lobbyCode, setLobbyCode] = useState("")
-  const [lobbyCodeError, setLobbyCodeError] = useState("")
+  const [lobbyCodeError, setLobbyCodeError] = useState(false)
   const [userID, setUserID] = useState(getRandomString(16))
   const [waitingForServer, setWaitingForServer] = useState(false)
   const [showContent, setShowContent] = useState(false)
   const [name, setName] = useState("")
   const [inputName, setInputName] = useState(false)
-  const [nameError, setNameError] = useState("")
+  const [nameError, setNameError] = useState(false)
   useEffect(() => {
     const linkCode = window.location.search.substring(1, 9)
     if (linkCode) {
@@ -23,7 +23,7 @@ function Connect(props) {
   }, [])
   const tryUploadingName = () => {
     if (name.trim().length < options.name.minLength) {
-      setNameError(`The name is too short. The minimum length is ${options.name.minLength} characters.`)
+      setNameError(true)
     } else {
       Database.ref(`lobbies/_${lobbyCode}/players/${userID}`).set({ id: userID, name: name, points: 0, timePressed: 0, pressed: false })
       Database.ref(`lobbies/_${lobbyCode}/players/${userID}`).onDisconnect().remove();
@@ -47,7 +47,7 @@ function Connect(props) {
           setLobbyCode(key)
           setInputName(true)
         } else {
-          setLobbyCodeError("The challenge link is invalid.")
+          setLobbyCodeError(true)
           setWaitingForServer(false)
         }
         setShowContent(true)
@@ -78,7 +78,7 @@ function Connect(props) {
           <InputGroup style={{ maxWidth: "270px" }} className="mt-5">
             <FormControl
               placeholder="Team Name"
-              onChange={(event) => { setNameError(""); setName(event.target.value) }}
+              onChange={(event) => { setNameError(false); setName(event.target.value) }}
               maxLength={options.name.maxLength} />
             <InputGroup.Append>
               <Button
@@ -89,7 +89,9 @@ function Connect(props) {
             </InputGroup.Append>
           </InputGroup>
         </Row>
-        {nameError && <Row className="d-flex justify-content-center"><Alert className="mt-3" variant="danger">{nameError}</Alert></Row>}
+        <Fade in={nameError}>
+          <Row className="d-flex justify-content-center"><Alert className="mt-3" variant="danger">{`The name is too short. The minimum length is ${options.name.minLength} characters.`}</Alert></Row>
+        </Fade>
       </Container>
     </>)
   }
@@ -99,10 +101,10 @@ function Connect(props) {
       <Button
         variant="primary"
         onClick={createLobby}
-        className="mt-3">
+        className="mt-4">
         Create a new lobby
       </Button>
-      {lobbyCodeError && <Row className="d-flex justify-content-center"><Alert className="mt-3" variant="danger">{lobbyCodeError}</Alert></Row>}
+      {lobbyCodeError && <Row className="d-flex justify-content-center"><Alert className="mt-3" variant="danger">The challenge link is invalid.</Alert></Row>}
     </center>
   )
 }

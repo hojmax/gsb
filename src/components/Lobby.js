@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Database } from "./Fire.js"
 import CopyLink from "./CopyLink.js"
-import { Button, Spinner, Nav, Table, Container, Row, Alert } from 'react-bootstrap'
+import { Button, Spinner, Nav, Table, Container, Row, Alert, ButtonGroup, Fade } from 'react-bootstrap'
 import { useTransition, animated } from "react-spring"
 
 const kick = (lobbyCode, id) => {
@@ -23,31 +23,33 @@ function PlayerTable(data) {
     leave: { opacity: 0 },
   })
   const getSettingsCell = (item) => {
-    return <td>
-      <Button variant="primary"
-        onClick={() => {
-          if (!data.serverWait) {
-            data.setServerWait(true)
-            Database.ref(`lobbies/_${data.lobby.local.lobbyCode}/players/${item.id}/points`).set(item.points + 1).then(() => data.setServerWait(false))
-          }
-        }}>
-        <i className="fas fa-plus"></i>
-      </Button>
-      {" "}
-      <Button variant="primary"
-        onClick={() => {
-          if (!data.serverWait) {
-            data.setServerWait(true)
-            Database.ref(`lobbies/_${data.lobby.local.lobbyCode}/players/${item.id}/points`).set(item.points - 1).then(() => data.setServerWait(false))
-          }
-        }}>
-        <i className="fas fa-minus"></i>
-      </Button>
-      {" "}
-      <Button variant="primary"
-        onClick={() => kick(data.lobby.local.lobbyCode, item.id)}>
-        <i className="fas fa-users-slash"></i>
-      </Button>
+    return <td class="text-center">
+      <ButtonGroup size="sm">
+        <Button variant="primary"
+          onClick={() => {
+            if (!data.serverWait) {
+              data.setServerWait(true)
+              Database.ref(`lobbies/_${data.lobby.local.lobbyCode}/players/${item.id}/points`).set(item.points + 1).then(() => data.setServerWait(false))
+            }
+          }}>
+          <i className="fas fa-plus"></i>
+        </Button>
+        {" "}
+        <Button variant="primary"
+          onClick={() => {
+            if (!data.serverWait) {
+              data.setServerWait(true)
+              Database.ref(`lobbies/_${data.lobby.local.lobbyCode}/players/${item.id}/points`).set(item.points - 1).then(() => data.setServerWait(false))
+            }
+          }}>
+          <i className="fas fa-minus"></i>
+        </Button>
+        {" "}
+        <Button variant="primary"
+          onClick={() => kick(data.lobby.local.lobbyCode, item.id)}>
+          <i className="fas fa-users-slash"></i>
+        </Button>
+      </ButtonGroup>
     </td>
   }
   const rows = playerTransitions.map(({ item, props, key }, i) => {
@@ -108,7 +110,7 @@ function Lobby(props) {
     <>
       <Nav activeKey="">
         <Nav.Item>
-          <Nav.Link href="/gsb">Home</Nav.Link>
+          <Nav.Link style={{ fontSize: "22px" }} href="/gsb">Home</Nav.Link>
         </Nav.Item>
       </Nav>
       <center>
@@ -119,13 +121,15 @@ function Lobby(props) {
               onClick={tryBuzzerPress}>
             </button>}
           <PlayerTable serverWait={serverWait} setServerWait={setServerWait} lobby={props.lobby} />
-          {isHost && <Button variant="secondary" onClick={resetPlayersPressed}>Reset buzzers</Button>}
-          {!props.lobbyExists && <Row className="d-flex justify-content-center"><Alert className="mt-3" variant="danger">The host has left the lobby.</Alert></Row>}
+          {isHost && <Button className="mb-5" variant="secondary" onClick={resetPlayersPressed}>Reset buzzers</Button>}
+          <Fade in={!props.lobbyExists}>
+            <Row className="d-flex justify-content-center"><Alert className="mt-3" variant="danger">The host has left the lobby.</Alert></Row>
+          </Fade>
         </>) : (<>
-          <h3>Waiting for players.</h3>
-          <Spinner animation="border" variant="primary" />
+          <h2>Waiting for players.</h2>
+          <Spinner className="mb-5" animation="border" variant="primary" />
         </>)}
-        {isHost && <><br /> <br /><CopyLink url={window.location.origin + window.location.pathname + "?" + props.lobby.local.lobbyCode} /></>}
+        {isHost && <CopyLink url={window.location.origin + window.location.pathname + "?" + props.lobby.local.lobbyCode} />}
       </center>
     </>
   )
