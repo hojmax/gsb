@@ -10,7 +10,7 @@
   background-color:rgb(221, 48, 48);
 }
 .nonPressable {
-  background-color: rgb(167, 26, 26);
+  background-color: rgb(131, 24, 24);
 }
 .pressable:hover {
   background-color: rgb(196, 51, 51);
