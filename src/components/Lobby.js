@@ -73,7 +73,7 @@ function PlayerTable(data) {
     return <animated.tr key={key} style={data.lobby.local.userID === item.id ? { ...props, backgroundColor: "rgb(208, 233, 193)" } : { ...props }}>
       <td>{item.pressed && positionDict[item.id]}</td>
       <td>{item.name}</td>
-      <td>{maxScore === item.points ? `${item.points} 🥇` : `${item.points} 🥈`}</td>
+      <td>{maxScore === item.points ? `${item.points} 🥇` : item.points</td>
       {isHost && getSettingsCell(item)}
     </animated.tr>
   })
