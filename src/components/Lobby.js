@@ -78,7 +78,7 @@ function PlayerTable(data) {
     </animated.tr>
   })
   return <Container>
-    <Row style={{ maxWidth: "400px" }} className="d-flex justify-content-center">
+    <Row style={{ maxWidth: "500px" }} className="d-flex justify-content-center">
       <Table striped bordered>
         <thead>
           <tr>
