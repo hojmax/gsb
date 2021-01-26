@@ -1,11 +1,19 @@
 import React, { useState, useEffect } from 'react'
 import { Database } from "./Fire.js"
 import CopyLink from "./CopyLink.js"
-import { Button, Spinner, Nav, Table, Container, Row, Alert, ButtonGroup, Fade } from 'react-bootstrap'
+import { Button, Spinner, Nav, Table, Container, Row, Alert, ButtonGroup, Fade, DropdownButton, Dropdown, Col, Form } from 'react-bootstrap'
 import { useTransition, animated } from "react-spring"
 
 const kick = (lobbyCode, id) => {
   Database.ref(`lobbies/_${lobbyCode}/kickAnnouncer`).set(id)
+}
+
+function Settings(props) {
+  return (
+    <DropdownButton id="dropdown-basic-button" className="float-right mt-1 mr-1" title={<i className="fas fa-cog"></i>}>
+      <Dropdown.Item onClick={() => props.setAutoReset(!props.autoReset)}>Reset buzzers when adding points {props.autoReset ? <i className="far fa-toggle-on text-primary"></i> : <i className="far fa-toggle-off text-primary"></i>}</Dropdown.Item>
+    </DropdownButton>
+  )
 }
 
 function PlayerTable(data) {
@@ -23,13 +31,20 @@ function PlayerTable(data) {
     leave: { opacity: 0 },
   })
   const getSettingsCell = (item) => {
-    return <td class="text-center">
+    return <td className="text-center">
       <ButtonGroup size="sm">
         <Button variant="primary"
           onClick={() => {
-            if (!data.serverWait) {
+            if (!data.serverWait && data.lobby.server.players[item.id]) {
               data.setServerWait(true)
-              Database.ref(`lobbies/_${data.lobby.local.lobbyCode}/players/${item.id}/points`).set(item.points + 1).then(() => data.setServerWait(false))
+              let updates = {}
+              if (data.autoReset) {
+                Object.values(data.lobby.server.players).forEach((e) => {
+                  updates[`lobbies/_${data.lobby.local.lobbyCode}/players/${e.id}/pressed`] = false
+                })
+              }
+              updates[`lobbies/_${data.lobby.local.lobbyCode}/players/${item.id}/points`] = item.points + 1
+              Database.ref().update(updates).then(() => data.setServerWait(false))
             }
           }}>
           <i className="fas fa-plus"></i>
@@ -37,7 +52,7 @@ function PlayerTable(data) {
         {" "}
         <Button variant="primary"
           onClick={() => {
-            if (!data.serverWait) {
+            if (!data.serverWait && data.lobby.server.players[item.id]) {
               data.setServerWait(true)
               Database.ref(`lobbies/_${data.lobby.local.lobbyCode}/players/${item.id}/points`).set(item.points - 1).then(() => data.setServerWait(false))
             }
@@ -46,17 +61,19 @@ function PlayerTable(data) {
         </Button>
         {" "}
         <Button variant="primary"
-          onClick={() => kick(data.lobby.local.lobbyCode, item.id)}>
+          onClick={() => data.lobby.server.players[item.id] && kick(data.lobby.local.lobbyCode, item.id)}>
           <i className="fas fa-users-slash"></i>
         </Button>
       </ButtonGroup>
     </td>
   }
+  const maxScore = Object.values(data.lobby.server.players)
+    .reduce((acc, cur) => cur.points > acc ? cur.points : acc, -Infinity)
   const rows = playerTransitions.map(({ item, props, key }, i) => {
-    return <animated.tr key={key} style={props}>
+    return <animated.tr key={key} style={data.lobby.local.userID === item.id ? { ...props, backgroundColor: "rgb(208, 233, 193)" } : { ...props }}>
       <td>{item.pressed && positionDict[item.id]}</td>
       <td>{item.name}</td>
-      <td>{item.points}</td>
+      <td>{maxScore === item.points ? `${item.points} 🥇` : item.points}</td>
       {isHost && getSettingsCell(item)}
     </animated.tr>
   })
@@ -81,6 +98,7 @@ function PlayerTable(data) {
 
 function Lobby(props) {
   const [serverWait, setServerWait] = useState(false)
+  const [autoReset, setAutoReset] = useState(false)
   const isHost = props.lobby.local.userID === props.lobby.server.hostID
   useEffect(() => {
     if (props.lobby.server.kickAnnouncer === props.lobby.local.userID) {
@@ -106,13 +124,25 @@ function Lobby(props) {
     }
   }
   const hasPressedBuzzer = () => !props.lobby.server.players[props.lobby.local.userID].pressed
+  const homeNav = (
+    <Nav activeKey="" style={{ display: "inline-block" }}>
+      <Nav.Item>
+        <Nav.Link style={{ fontSize: "22px" }} href="/gsb">Home</Nav.Link>
+      </Nav.Item>
+    </Nav>)
   return (
     <>
-      <Nav activeKey="">
-        <Nav.Item>
-          <Nav.Link style={{ fontSize: "22px" }} href="/gsb">Home</Nav.Link>
-        </Nav.Item>
-      </Nav>
+      {isHost ? (
+        <Row>
+          <Col>
+            {homeNav}
+          </Col >
+          <Col>
+            <Settings autoReset={autoReset} setAutoReset={setAutoReset} />
+          </Col >
+        </Row >
+      ) : homeNav
+      }
       <center>
         {props.lobby.server.players ? (<>
           {!isHost &&
@@ -120,10 +150,10 @@ function Lobby(props) {
               className={(hasPressedBuzzer() ? "pressable" : "nonPressable") + " buzzer mb-4"}
               onClick={tryBuzzerPress}>
             </button>}
-          <PlayerTable serverWait={serverWait} setServerWait={setServerWait} lobby={props.lobby} />
+          <PlayerTable serverWait={serverWait} autoReset={autoReset} setServerWait={setServerWait} lobby={props.lobby} />
           {isHost && <Button className="mb-5" variant="secondary" onClick={resetPlayersPressed}>Reset buzzers</Button>}
           <Fade in={!props.lobbyExists}>
-            <Row className="d-flex justify-content-center"><Alert className="mt-3" variant="danger">The host has left the lobby.</Alert></Row>
+            <Row className="d-flex justify-content-center"><Alert className="mt-3" variant="danger">{isHost ? "The lobby has expired." : "The host has left the lobby."}</Alert></Row>
           </Fade>
         </>) : (<>
           <h2>Waiting for players.</h2>

@@ -7,13 +7,13 @@
   border: 5px solid lightgrey;
 }
 .pressable {
-  background-color:rgb(255, 0, 0);
+  background-color:rgb(221, 48, 48);
 }
 .nonPressable {
   background-color: rgb(167, 26, 26);
 }
 .pressable:hover {
-  background-color: rgb(240, 26, 26);
+  background-color: rgb(196, 51, 51);
 }
 .pressable:active {
 	position:relative;

@@ -25,9 +25,18 @@ function Connect(props) {
     if (name.trim().length < options.name.minLength) {
       setNameError(true)
     } else {
-      Database.ref(`lobbies/_${lobbyCode}/players/${userID}`).set({ id: userID, name: name, points: 0, timePressed: 0, pressed: false })
-      Database.ref(`lobbies/_${lobbyCode}/players/${userID}`).onDisconnect().remove();
-      connect(lobbyCode)
+      if (!waitingForServer) {
+        setWaitingForServer(true)
+        Database.ref(`lobbies/_${lobbyCode}`).once("value", (snapshot) => {
+          if (snapshot.exists()) {
+            Database.ref(`lobbies/_${lobbyCode}/players/${userID}`).set({ id: userID, name: name, points: 0, timePressed: 0, pressed: false })
+            Database.ref(`lobbies/_${lobbyCode}/players/${userID}`).onDisconnect().remove();
+            connect(lobbyCode)
+          } else {
+            window.location.search = window.location.search
+          }
+        })
+      }
     }
   }
   const connect = (key) => {
@@ -46,6 +55,7 @@ function Connect(props) {
         if (snapshot.exists()) {
           setLobbyCode(key)
           setInputName(true)
+          setWaitingForServer(false)
         } else {
           setLobbyCodeError(true)
           setWaitingForServer(false)
