@@ -12,6 +12,7 @@ function Settings(props) {
   return (
     <DropdownButton id="dropdown-basic-button" className="float-right mt-1 mr-1" title={<i className="fas fa-cog"></i>}>
       <Dropdown.Item onClick={() => props.setAutoReset(!props.autoReset)}>Reset buzzers when adding points {props.autoReset ? <i className="far fa-toggle-on text-primary"></i> : <i className="far fa-toggle-off text-primary"></i>}</Dropdown.Item>
+      {props.showURL && <Dropdown.Item><CopyLink url={props.url} /></Dropdown.Item>}
     </DropdownButton>
   )
 }
@@ -70,20 +71,20 @@ function PlayerTable(data) {
   const maxScore = Object.values(data.lobby.server.players)
     .reduce((acc, cur) => cur.points > acc ? cur.points : acc, -Infinity)
   const rows = playerTransitions.map(({ item, props, key }, i) => {
-    return <animated.tr key={key} style={data.lobby.local.userID === item.id ? { ...props, backgroundColor: "rgb(208, 233, 193)" } : { ...props }}>
+    return <animated.tr key={key} style={props} className={data.lobby.local.userID === item.id ? "table-active" : ""}>
       <td>{item.pressed && positionDict[item.id]}</td>
       <td>{item.name}</td>
-      <td>{maxScore === item.points ? `${item.points} 🥇` : item.points}</td>
+      <td style={{ fontFamily: 'Roboto Mono' }}>{maxScore === item.points ? `${item.points}🥇` : item.points}</td>
       {isHost && getSettingsCell(item)}
     </animated.tr>
   })
   return <Container>
     <Row style={{ maxWidth: "500px" }} className="d-flex justify-content-center">
-      <Table striped bordered>
-        <thead>
+      <Table bordered>
+        <thead className="thead-dark">
           <tr>
             <th><i className="text-success fas fa-list-ol"></i></th>
-            <th><i className="text-secondary fas fa-users"></i></th>
+            <th><i className="text-primary fas fa-users"></i></th>
             <th><i className="text-warning fas fa-star"></i></th>
             {isHost && <th><i className="fas fa-users-cog"></i></th>}
           </tr>
@@ -130,6 +131,7 @@ function Lobby(props) {
         <Nav.Link style={{ fontSize: "22px" }} href="/gsb">Home</Nav.Link>
       </Nav.Item>
     </Nav>)
+  const lobbyURL = window.location.origin + window.location.pathname + "?" + props.lobby.local.lobbyCode
   return (
     <>
       {isHost ? (
@@ -138,7 +140,7 @@ function Lobby(props) {
             {homeNav}
           </Col >
           <Col>
-            <Settings autoReset={autoReset} setAutoReset={setAutoReset} />
+            <Settings showURL={props.lobby.server.players} autoReset={autoReset} url={lobbyURL} setAutoReset={setAutoReset} />
           </Col >
         </Row >
       ) : homeNav
@@ -151,7 +153,7 @@ function Lobby(props) {
               onClick={tryBuzzerPress}>
             </button>}
           <PlayerTable serverWait={serverWait} autoReset={autoReset} setServerWait={setServerWait} lobby={props.lobby} />
-          {isHost && <Button className="mb-5" variant="secondary" onClick={resetPlayersPressed}>Reset buzzers</Button>}
+          {isHost && <Button variant="dark" onClick={resetPlayersPressed}>Reset buzzers</Button>}
           <Fade in={!props.lobbyExists}>
             <Row className="d-flex justify-content-center"><Alert className="mt-3" variant="danger">{isHost ? "The lobby has expired." : "The host has left the lobby."}</Alert></Row>
           </Fade>
@@ -159,7 +161,7 @@ function Lobby(props) {
           <h2>Waiting for players.</h2>
           <Spinner className="mb-5" animation="border" variant="primary" />
         </>)}
-        {isHost && <CopyLink url={window.location.origin + window.location.pathname + "?" + props.lobby.local.lobbyCode} />}
+        {!props.lobby.server.players && <CopyLink url={lobbyURL} />}
       </center>
     </>
   )
