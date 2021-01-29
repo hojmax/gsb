@@ -10,7 +10,7 @@ const kick = (lobbyCode, id) => {
 
 function Settings(props) {
   return (
-    <DropdownButton id="dropdown-basic-button" className="float-right mt-1 mr-1" title={<i className="fas fa-cog"></i>}>
+    <DropdownButton id="dropdown-basic-button" className="float-right mt-2" title={<i className="fas fa-cog"></i>}>
       <Dropdown.Item onClick={() => props.setAutoReset(!props.autoReset)}>Reset buzzers when adding points {props.autoReset ? <i className="far fa-toggle-on text-primary"></i> : <i className="far fa-toggle-off text-primary"></i>}</Dropdown.Item>
       {props.showURL && <Dropdown.Item><CopyLink url={props.url} /></Dropdown.Item>}
     </DropdownButton>
@@ -68,33 +68,53 @@ function PlayerTable(data) {
       </ButtonGroup>
     </td>
   }
+  let tiedFirst = false
   const maxScore = Object.values(data.lobby.server.players)
-    .reduce((acc, cur) => cur.points > acc ? cur.points : acc, -Infinity)
+    .reduce((acc, cur) => {
+      if (cur.points > acc) {
+        tiedFirst = false
+        return cur.points
+      } else if (cur.points == acc) {
+        tiedFirst = true
+        return acc
+      } else {
+        return acc
+      }
+    }, -Infinity)
+  const getPointsField = (score) => {
+    if (score == maxScore) {
+      if (tiedFirst) {
+        return `${score}🤼‍♂️`
+      } else {
+        return `${score}🥇`
+      }
+    } else {
+      return score
+    }
+  }
   const rows = playerTransitions.map(({ item, props, key }, i) => {
     return <animated.tr key={key} style={props} className={data.lobby.local.userID === item.id ? "table-active" : ""}>
       <td>{item.pressed && positionDict[item.id]}</td>
       <td>{item.name}</td>
-      <td style={{ fontFamily: 'Roboto Mono' }}>{maxScore === item.points ? `${item.points}🥇` : item.points}</td>
+      <td style={{ fontFamily: 'Roboto Mono' }}>{getPointsField(item.points)}</td>
       {isHost && getSettingsCell(item)}
     </animated.tr>
   })
-  return <Container>
-    <Row style={{ maxWidth: "500px" }} className="d-flex justify-content-center">
-      <Table bordered>
-        <thead className="thead-dark">
-          <tr>
-            <th><i className="text-success fas fa-list-ol"></i></th>
-            <th><i className="text-primary fas fa-users"></i></th>
-            <th><i className="text-warning fas fa-star"></i></th>
-            {isHost && <th><i className="fas fa-users-cog"></i></th>}
-          </tr>
-        </thead>
-        <tbody>
-          {rows}
-        </tbody>
-      </Table>
-    </Row>
-  </Container>
+  return <Row style={{ maxWidth: "500px" }} className="justify-content-center">
+    <Table bordered>
+      <thead className="thead-dark">
+        <tr>
+          <th><i className="text-success fas fa-list-ol"></i></th>
+          <th><i className="text-primary fas fa-users"></i></th>
+          <th><i className="text-warning fas fa-star"></i></th>
+          {isHost && <th><i className="fas fa-users-cog"></i></th>}
+        </tr>
+      </thead>
+      <tbody>
+        {rows}
+      </tbody>
+    </Table>
+  </Row>
 }
 
 function Lobby(props) {
@@ -126,14 +146,11 @@ function Lobby(props) {
   }
   const hasPressedBuzzer = () => !props.lobby.server.players[props.lobby.local.userID].pressed
   const homeNav = (
-    <Nav activeKey="" style={{ display: "inline-block" }}>
-      <Nav.Item>
-        <Nav.Link style={{ fontSize: "22px" }} href="/gsb">Home</Nav.Link>
-      </Nav.Item>
-    </Nav>)
+    <Button variant="primary" href="/gsb" className="mt-2"><i className="fas fa-home"></i></Button>
+  )
   const lobbyURL = window.location.origin + window.location.pathname + "?" + props.lobby.local.lobbyCode
   return (
-    <>
+    <Container>
       {isHost ? (
         <Row>
           <Col>
@@ -163,7 +180,7 @@ function Lobby(props) {
         </>)}
         {!props.lobby.server.players && <CopyLink url={lobbyURL} />}
       </center>
-    </>
+    </Container>
   )
 }
 export default Lobby;

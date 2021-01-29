@@ -30,7 +30,9 @@ function Connect(props) {
         Database.ref(`lobbies/_${lobbyCode}`).once("value", (snapshot) => {
           if (snapshot.exists()) {
             Database.ref(`lobbies/_${lobbyCode}/players/${userID}`).set({ id: userID, name: name, points: 0, timePressed: 0, pressed: false })
-            Database.ref(`lobbies/_${lobbyCode}/players/${userID}`).onDisconnect().remove();
+            window.addEventListener("beforeunload", () => {
+              Database.ref(`lobbies/_${lobbyCode}/players/${userID}`).remove()
+            })
             connect(lobbyCode)
           } else {
             window.location.search = window.location.search
@@ -73,7 +75,9 @@ function Connect(props) {
         hostID: userID,
         kickAnnouncer: ""
       }).then(() => {
-        Database.ref(`lobbies/_${randomLobbyCode}`).onDisconnect().remove();
+        window.addEventListener("beforeunload", () => {
+          Database.ref(`lobbies/_${randomLobbyCode}`).remove()
+        })
         connect(randomLobbyCode)
       })
     }
