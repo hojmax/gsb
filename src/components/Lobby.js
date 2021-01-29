@@ -10,7 +10,7 @@ const kick = (lobbyCode, id) => {
 
 function Settings(props) {
   return (
-    <DropdownButton id="dropdown-basic-button" className="float-right mt-2" title={<i className="fas fa-cog"></i>}>
+    <DropdownButton style={{ margin: 0, position: "absolute", top: "0px", right: "7px" }} id="dropdown-basic-button" className="float-right mt-2" title={<i className="fas fa-cog"></i>}>
       <Dropdown.Item onClick={() => props.setAutoReset(!props.autoReset)}>Reset buzzers when adding points {props.autoReset ? <i className="far fa-toggle-on text-primary"></i> : <i className="far fa-toggle-off text-primary"></i>}</Dropdown.Item>
       {props.showURL && <Dropdown.Item><CopyLink url={props.url} /></Dropdown.Item>}
     </DropdownButton>
@@ -100,7 +100,7 @@ function PlayerTable(data) {
       {isHost && getSettingsCell(item)}
     </animated.tr>
   })
-  return <Row style={{ maxWidth: "500px" }} className="justify-content-center">
+  return <Row style={{ maxWidth: "500px", marginTop: isHost ? "60px" : "20px" }} className="justify-content-center ">
     <Table bordered>
       <thead className="thead-dark">
         <tr>
@@ -146,28 +146,31 @@ function Lobby(props) {
   }
   const hasPressedBuzzer = () => !props.lobby.server.players[props.lobby.local.userID].pressed
   const homeNav = (
-    <Button variant="primary" href="/gsb" className="mt-2"><i className="fas fa-home"></i></Button>
+    <Button
+      style={{ margin: 0, position: "absolute", top: "0px", left: "7px" }}
+      variant="primary"
+      href="/gsb"
+      className="mt-2">
+      <i className="fas fa-home"></i>
+    </Button>
   )
   const lobbyURL = window.location.origin + window.location.pathname + "?" + props.lobby.local.lobbyCode
-  return (
+  return (<>
+    {isHost ? (
+      <>
+        {homeNav}
+        <Settings showURL={props.lobby.server.players} autoReset={autoReset} url={lobbyURL} setAutoReset={setAutoReset} />
+      </>
+    ) : homeNav
+    }
     <Container>
-      {isHost ? (
-        <Row>
-          <Col>
-            {homeNav}
-          </Col >
-          <Col>
-            <Settings showURL={props.lobby.server.players} autoReset={autoReset} url={lobbyURL} setAutoReset={setAutoReset} />
-          </Col >
-        </Row >
-      ) : homeNav
-      }
       <center>
         {props.lobby.server.players ? (<>
           {!isHost &&
             <button
-              className={(hasPressedBuzzer() ? "pressable" : "nonPressable") + " buzzer mb-4"}
-              onClick={tryBuzzerPress}>
+              className={(hasPressedBuzzer() ? "pressable" : "nonPressable") + " buzzer"}
+              onClick={tryBuzzerPress}
+              style={{marginTop:"20px"}}>
             </button>}
           <PlayerTable serverWait={serverWait} autoReset={autoReset} setServerWait={setServerWait} lobby={props.lobby} />
           {isHost && <Button variant="dark" onClick={resetPlayersPressed}>Reset buzzers</Button>}
@@ -175,12 +178,12 @@ function Lobby(props) {
             <Row className="d-flex justify-content-center"><Alert className="mt-3" variant="danger">{isHost ? "The lobby has expired." : "The host has left the lobby."}</Alert></Row>
           </Fade>
         </>) : (<>
-          <h2>Waiting for players.</h2>
+          <h2 style={{ marginTop: "55px" }}>Waiting for players.</h2>
           <Spinner className="mb-5" animation="border" variant="primary" />
         </>)}
         {!props.lobby.server.players && <CopyLink url={lobbyURL} />}
       </center>
     </Container>
-  )
+  </>)
 }
 export default Lobby;
