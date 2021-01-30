@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Database } from "./Fire.js"
 import CopyLink from "./CopyLink.js"
-import { Button, Spinner, Nav, Table, Container, Row, Alert, ButtonGroup, Fade, DropdownButton, Dropdown, Col, Form } from 'react-bootstrap'
+import { Button, Spinner, Table, Container, Row, Alert, ButtonGroup, Fade, DropdownButton, Dropdown } from 'react-bootstrap'
 import { useTransition, animated } from "react-spring"
 
 const kick = (lobbyCode, id) => {
@@ -10,7 +10,7 @@ const kick = (lobbyCode, id) => {
 
 function Settings(props) {
   return (
-    <DropdownButton style={{ margin: 0, position: "absolute", top: "0px", right: "7px" }} id="dropdown-basic-button" className="float-right mt-2" title={<i className="fas fa-cog"></i>}>
+    <DropdownButton disabled={props.lobbyExists ? false : true} style={{ margin: 0, position: "absolute", top: "0px", right: "7px" }} id="dropdown-basic-button" className="float-right mt-2" title={<i className="fas fa-cog"></i>}>
       <Dropdown.Item onClick={() => props.setAutoReset(!props.autoReset)}>Reset buzzers when adding points {props.autoReset ? <i className="far fa-toggle-on text-primary"></i> : <i className="far fa-toggle-off text-primary"></i>}</Dropdown.Item>
       {props.showURL && <Dropdown.Item><CopyLink url={props.url} /></Dropdown.Item>}
     </DropdownButton>
@@ -35,8 +35,9 @@ function PlayerTable(data) {
     return <td className="text-center">
       <ButtonGroup size="sm">
         <Button variant="primary"
+          disabled={data.lobbyExists ? false : true}
           onClick={() => {
-            if (!data.serverWait && data.lobby.server.players[item.id] && data.lobbyExists) {
+            if (!data.serverWait && data.lobby.server.players[item.id]) {
               data.setServerWait(true)
               let updates = {}
               if (data.autoReset) {
@@ -52,8 +53,9 @@ function PlayerTable(data) {
         </Button>
         {" "}
         <Button variant="primary"
+          disabled={data.lobbyExists ? false : true}
           onClick={() => {
-            if (!data.serverWait && data.lobby.server.players[item.id] && data.lobbyExists) {
+            if (!data.serverWait && data.lobby.server.players[item.id]) {
               data.setServerWait(true)
               Database.ref(`lobbies/_${data.lobby.local.lobbyCode}/players/${item.id}/points`).set(item.points - 1).then(() => data.setServerWait(false))
             }
@@ -62,7 +64,8 @@ function PlayerTable(data) {
         </Button>
         {" "}
         <Button variant="primary"
-          onClick={() => (data.lobby.server.players[item.id] && data.lobbyExists) && kick(data.lobby.local.lobbyCode, item.id)}>
+          disabled={data.lobbyExists ? false : true}
+          onClick={() => (data.lobby.server.players[item.id]) && kick(data.lobby.local.lobbyCode, item.id)}>
           <i className="fas fa-users-slash"></i>
         </Button>
       </ButtonGroup>
@@ -74,7 +77,7 @@ function PlayerTable(data) {
       if (cur.points > acc) {
         tiedFirst = false
         return cur.points
-      } else if (cur.points == acc) {
+      } else if (cur.points === acc) {
         tiedFirst = true
         return acc
       } else {
@@ -82,7 +85,7 @@ function PlayerTable(data) {
       }
     }, -Infinity)
   const getPointsField = (score) => {
-    if (score == maxScore) {
+    if (score === maxScore) {
       if (tiedFirst) {
         return `${score}🤼‍♂️`
       } else {
@@ -159,7 +162,7 @@ function Lobby(props) {
     {isHost ? (
       <>
         {homeNav}
-        <Settings showURL={props.lobby.server.players} autoReset={autoReset} url={lobbyURL} setAutoReset={setAutoReset} />
+        <Settings lobbyExists={props.lobbyExists} showURL={props.lobby.server.players} autoReset={autoReset} url={lobbyURL} setAutoReset={setAutoReset} />
       </>
     ) : homeNav
     }
@@ -172,16 +175,20 @@ function Lobby(props) {
               onClick={() => props.lobbyExists && tryBuzzerPress()}
               style={{ marginTop: "20px" }}>
             </button>}
-          <PlayerTable serverWait={serverWait} autoReset={autoReset} setServerWait={setServerWait} lobby={props.lobby} />
-          {isHost && <Button variant="dark" onClick={() => props.lobbyExists && resetPlayersPressed()}>Reset buzzers</Button>}
-          <Fade in={!props.lobbyExists}>
-            <Row className="d-flex justify-content-center"><Alert className="mt-3" variant="danger">{isHost ? "The lobby has expired." : "The host has left the lobby."}</Alert></Row>
-          </Fade>
+          <PlayerTable lobbyExists={props.lobbyExists} serverWait={serverWait} autoReset={autoReset} setServerWait={setServerWait} lobby={props.lobby} />
+          {isHost && <Button variant="dark"
+            disabled={props.lobbyExists ? false : true}
+            onClick={() => props.lobbyExists && resetPlayersPressed()}>
+            Reset buzzers
+            </Button>}
         </>) : (<>
           <h2 style={{ marginTop: "55px" }}>Waiting for players.</h2>
           <Spinner className="mb-5" animation="border" variant="primary" />
         </>)}
         {!props.lobby.server.players && <CopyLink url={lobbyURL} />}
+        <Fade in={!props.lobbyExists}>
+          <Row className="d-flex justify-content-center"><Alert className="mt-3" variant="danger">{isHost ? "The lobby has expired." : "The host has left the lobby."}</Alert></Row>
+        </Fade>
       </center>
     </Container>
   </>)
