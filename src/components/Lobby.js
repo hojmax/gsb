@@ -1,12 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { Database } from "./Fire.js"
 import CopyLink from "./CopyLink.js"
-import { Button, Spinner, Table, Container, Row, Alert, ButtonGroup, Fade, DropdownButton, Dropdown } from 'react-bootstrap'
-import { useTransition, animated } from "react-spring"
-
-const kick = (lobbyCode, id) => {
-  Database.ref(`lobbies/_${lobbyCode}/kickAnnouncer`).set(id)
-}
+import { Button, Spinner, Container, Row, Alert, Fade, DropdownButton, Dropdown } from 'react-bootstrap'
+import PlayerTable from "./PlayerTable.js"
 
 function Settings(props) {
   return (
@@ -15,109 +11,6 @@ function Settings(props) {
       {props.showURL && <Dropdown.Item><CopyLink url={props.url} /></Dropdown.Item>}
     </DropdownButton>
   )
-}
-
-function PlayerTable(data) {
-  const isHost = data.lobby.local.userID === data.lobby.server.hostID
-  const positionDict = {}
-  Object
-    .values(data.lobby.server.players)
-    .filter((e) => e.pressed)
-    .sort((a, b) => a.timePressed - b.timePressed)
-    .forEach((e, i) => positionDict[e.id] = i + 1)
-  const playerTransitions = useTransition(Object.values(data.lobby.server.players), item => item.id, {
-    config: { duration: 1000 },
-    from: { opacity: 0 },
-    enter: { opacity: 1 },
-    leave: { opacity: 0 },
-  })
-  const getSettingsCell = (item) => {
-    return <td className="text-center">
-      <ButtonGroup size="sm">
-        <Button variant="primary"
-          disabled={data.lobbyExists ? false : true}
-          onClick={() => {
-            if (!data.serverWait && data.lobby.server.players[item.id]) {
-              data.setServerWait(true)
-              let updates = {}
-              if (data.autoReset) {
-                Object.values(data.lobby.server.players).forEach((e) => {
-                  updates[`lobbies/_${data.lobby.local.lobbyCode}/players/${e.id}/pressed`] = false
-                })
-              }
-              updates[`lobbies/_${data.lobby.local.lobbyCode}/players/${item.id}/points`] = item.points + 1
-              Database.ref().update(updates).then(() => data.setServerWait(false))
-            }
-          }}>
-          <i className="fas fa-plus"></i>
-        </Button>
-        {" "}
-        <Button variant="primary"
-          disabled={data.lobbyExists ? false : true}
-          onClick={() => {
-            if (!data.serverWait && data.lobby.server.players[item.id]) {
-              data.setServerWait(true)
-              Database.ref(`lobbies/_${data.lobby.local.lobbyCode}/players/${item.id}/points`).set(item.points - 1).then(() => data.setServerWait(false))
-            }
-          }}>
-          <i className="fas fa-minus"></i>
-        </Button>
-        {" "}
-        <Button variant="primary"
-          disabled={data.lobbyExists ? false : true}
-          onClick={() => (data.lobby.server.players[item.id]) && kick(data.lobby.local.lobbyCode, item.id)}>
-          <i className="fas fa-users-slash"></i>
-        </Button>
-      </ButtonGroup>
-    </td>
-  }
-  let tiedFirst = false
-  const maxScore = Object.values(data.lobby.server.players)
-    .reduce((acc, cur) => {
-      if (cur.points > acc) {
-        tiedFirst = false
-        return cur.points
-      } else if (cur.points === acc) {
-        tiedFirst = true
-        return acc
-      } else {
-        return acc
-      }
-    }, -Infinity)
-  const getPointsField = (score) => {
-    if (score === maxScore) {
-      if (tiedFirst) {
-        return `${score}🤼‍♂️`
-      } else {
-        return `${score}🥇`
-      }
-    } else {
-      return score
-    }
-  }
-  const rows = playerTransitions.map(({ item, props, key }, i) => {
-    return <animated.tr key={key} style={props} className={data.lobby.local.userID === item.id ? "table-active" : ""}>
-      <td>{item.pressed && positionDict[item.id]}</td>
-      <td>{item.name}</td>
-      <td style={{ fontFamily: 'Roboto Mono' }}>{getPointsField(item.points)}</td>
-      {isHost && getSettingsCell(item)}
-    </animated.tr>
-  })
-  return <Row style={{ maxWidth: "500px", marginTop: isHost ? "60px" : "20px" }} className="justify-content-center ">
-    <Table bordered>
-      <thead className="thead-dark">
-        <tr>
-          <th><i className="text-success fas fa-list-ol"></i></th>
-          <th><i className="text-primary fas fa-users"></i></th>
-          <th><i className="text-warning fas fa-star"></i></th>
-          {isHost && <th><i className="fas fa-users-cog"></i></th>}
-        </tr>
-      </thead>
-      <tbody>
-        {rows}
-      </tbody>
-    </Table>
-  </Row>
 }
 
 function Lobby(props) {
