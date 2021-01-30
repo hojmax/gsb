@@ -36,7 +36,7 @@ function PlayerTable(data) {
       <ButtonGroup size="sm">
         <Button variant="primary"
           onClick={() => {
-            if (!data.serverWait && data.lobby.server.players[item.id]) {
+            if (!data.serverWait && data.lobby.server.players[item.id] && data.lobbyExists) {
               data.setServerWait(true)
               let updates = {}
               if (data.autoReset) {
@@ -53,7 +53,7 @@ function PlayerTable(data) {
         {" "}
         <Button variant="primary"
           onClick={() => {
-            if (!data.serverWait && data.lobby.server.players[item.id]) {
+            if (!data.serverWait && data.lobby.server.players[item.id] && data.lobbyExists) {
               data.setServerWait(true)
               Database.ref(`lobbies/_${data.lobby.local.lobbyCode}/players/${item.id}/points`).set(item.points - 1).then(() => data.setServerWait(false))
             }
@@ -62,7 +62,7 @@ function PlayerTable(data) {
         </Button>
         {" "}
         <Button variant="primary"
-          onClick={() => data.lobby.server.players[item.id] && kick(data.lobby.local.lobbyCode, item.id)}>
+          onClick={() => (data.lobby.server.players[item.id] && data.lobbyExists) && kick(data.lobby.local.lobbyCode, item.id)}>
           <i className="fas fa-users-slash"></i>
         </Button>
       </ButtonGroup>
@@ -169,11 +169,11 @@ function Lobby(props) {
           {!isHost &&
             <button
               className={(hasPressedBuzzer() ? "pressable" : "nonPressable") + " buzzer"}
-              onClick={tryBuzzerPress}
-              style={{marginTop:"20px"}}>
+              onClick={() => props.lobbyExists && tryBuzzerPress()}
+              style={{ marginTop: "20px" }}>
             </button>}
           <PlayerTable serverWait={serverWait} autoReset={autoReset} setServerWait={setServerWait} lobby={props.lobby} />
-          {isHost && <Button variant="dark" onClick={resetPlayersPressed}>Reset buzzers</Button>}
+          {isHost && <Button variant="dark" onClick={() => props.lobbyExists && resetPlayersPressed()}>Reset buzzers</Button>}
           <Fade in={!props.lobbyExists}>
             <Row className="d-flex justify-content-center"><Alert className="mt-3" variant="danger">{isHost ? "The lobby has expired." : "The host has left the lobby."}</Alert></Row>
           </Fade>
