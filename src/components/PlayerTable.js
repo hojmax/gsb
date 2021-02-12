@@ -65,7 +65,14 @@ function PlayerTable(data) {
                                 })
                             }
                             updates[`lobbies/_${data.lobby.local.lobbyCode}/players/${item.id}/points`] = item.points + 1
-                            Database.ref().update(updates).then(() => data.setServerWait(false))
+                            Database.ref().update(updates).then(() => {
+                                Database.ref(`lobbies/_${data.lobby.local.lobbyCode}/players/${item.id}`).once("value").then((snapshot) => {
+                                    if (snapshot.val().id === undefined) {
+                                        Database.ref(`lobbies/_${data.lobby.local.lobbyCode}/players/${item.id}`).remove()
+                                    }
+                                })
+                                data.setServerWait(false)
+                            })
                         }
                     }}>
                     <i className="fas fa-plus"></i>
