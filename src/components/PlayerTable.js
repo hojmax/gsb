@@ -122,12 +122,16 @@ function PlayerTable(data) {
         }
     } // style={{fontSize:"16px"}}
     const rows = playerTransitions.map(({ item, props, key }, i) => {
-        return <animated.tr key={key} style={props} className={data.lobby.local.userID === item.id ? "table-active" : ""}>
-            <td>{getPositionTransition(item)}</td>
-            <td>{item.name}</td>
-            <td style={{ fontFamily: 'Roboto Mono' }}>{getPointsField(item.points)}</td>
-            {isHost && getSettingsCell(item)}
-        </animated.tr>
+        if (item.id) {
+            return <animated.tr key={key} style={props} className={data.lobby.local.userID === item.id ? "table-active" : ""}>
+                <td>{getPositionTransition(item)}</td>
+                <td>{item.name}</td>
+                <td style={{ fontFamily: 'Roboto Mono' }}>{getPointsField(item.points)}</td>
+                {isHost && getSettingsCell(item)}
+            </animated.tr>
+        } else {
+            return undefined
+        }
     })
     return <Row style={{ maxWidth: "500px", marginTop: isHost ? "60px" : "20px" }} className="justify-content-center ">
         <Table bordered>
