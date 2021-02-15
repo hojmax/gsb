@@ -4,6 +4,7 @@ import { Database } from "./Fire.js"
 
 const kick = (lobbyCode, id) => {
     Database.ref(`lobbies/_${lobbyCode}/kickAnnouncer`).set(id)
+    Database.ref(`lobbies/_${lobbyCode}/players/${id}`).remove()
 }
 
 function PlayerTable(data) {
